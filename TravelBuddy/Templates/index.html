@@ -6,6 +6,13 @@
     <title>Professional Chat Interface</title>
     <style>
         /* Chat window styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+
         #chat-window {
             width: 400px;
             height: 500px;
@@ -13,9 +20,8 @@
             border-radius: 10px;
             overflow-y: scroll;
             padding: 10px;
-            margin: 0 auto;
-            background-color: #f5f5f5;
-            font-family: Arial, sans-serif;
+            margin: 20px auto;
+            background-color: #ffffff;
         }
 
         /* Message bubble styles */
@@ -36,15 +42,17 @@
 
         /* Input field and send button styles */
         #message-input {
-            width: 80%;
+            width: calc(100% - 50px); /* Adjusted width */
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 5px;
             margin-top: 10px;
             margin-bottom: 10px;
+            margin-right: 10px;
         }
 
         #send-button {
+            width: 50px; /* Fixed width for the send button */
             padding: 8px 15px;
             background-color: #4CAF50;
             color: white;
@@ -56,22 +64,34 @@
         #send-button:hover {
             background-color: #45a049;
         }
+
+        /* Bot name heading */
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
+    <h1>TravelBuddy</h1>
     <div id="chat-window">
         <!-- Chat messages will be appended here dynamically -->
     </div>
-    <input type="text" id="message-input">
+    <input type="text" id="message-input" onkeypress="handleKeyPress(event)">
     <button id="send-button">Send</button>
 
     <script>
-        document.getElementById('send-button').addEventListener('click', function() {
+        document.getElementById('send-button').addEventListener('click', sendMessage);
+        
+        function sendMessage() {
             var message = document.getElementById('message-input').value;
-            appendMessage(message, 'user');
-            sendMessageToServer(message);
-            document.getElementById('message-input').value = ''; // Clear input field
-        });
+            if (message.trim() !== '') {
+                appendMessage(message, 'user');
+                sendMessageToServer(message);
+                document.getElementById('message-input').value = ''; // Clear input field
+            }
+        }
 
         function appendMessage(message, sender) {
             var chatWindow = document.getElementById('chat-window');
@@ -92,11 +112,19 @@
             xhr.open('POST', '/send_message/', true);
             xhr.setRequestHeader('Content-Type', 'application/json');
             xhr.onreadystatechange = function () {
-                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    console.log('Message sent to server:', message);
+                if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 201) {
+                    var response = JSON.parse(xhr.responseText);
+                    var serverMessage = response.message;
+                    appendMessage(serverMessage, 'TravelBuddy'); // Display the response in chat box
                 }
             };
             xhr.send(JSON.stringify({message: message}));
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
         }
     </script>
 </body>
